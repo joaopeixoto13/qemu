@@ -1,0 +1,1 @@
+specific_ss.add(when: 'CONFIG_BAO', if_true: files('bao-all.c'))

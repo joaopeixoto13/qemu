@@ -87,6 +87,7 @@
 #include "migration/postcopy-ram.h"
 #include "sysemu/kvm.h"
 #include "sysemu/hax.h"
+#include "sysemu/bao.h"
 #include "qapi/qobject-input-visitor.h"
 #include "qemu/option.h"
 #include "qemu/config-file.h"
@@ -216,6 +217,22 @@ static struct {
     { .driver = "ati-vga",              .flag = &default_vga       },
     { .driver = "vhost-user-vga",       .flag = &default_vga       },
     { .driver = "virtio-vga-gl",        .flag = &default_vga       },
+};
+
+static QemuOptsList qemu_bao_opts = {
+    .name = "bao",
+    .head = QTAILQ_HEAD_INITIALIZER(qemu_bao_opts.head),
+    .merge_lists = true,
+    .desc = {
+        {
+            .name = "dm_id",
+            .type = QEMU_OPT_STRING,
+        },{
+            .name = "irq",
+            .type = QEMU_OPT_STRING,
+        },
+        { /* end of list */ }
+    },
 };
 
 static QemuOptsList qemu_rtc_opts = {
@@ -2683,6 +2700,7 @@ void qemu_init(int argc, char **argv)
     qemu_add_opts(&qemu_netdev_opts);
     qemu_add_opts(&qemu_nic_opts);
     qemu_add_opts(&qemu_net_opts);
+    qemu_add_opts(&qemu_bao_opts);
     qemu_add_opts(&qemu_rtc_opts);
     qemu_add_opts(&qemu_global_opts);
     qemu_add_opts(&qemu_mon_opts);
@@ -3364,6 +3382,18 @@ void qemu_init(int argc, char **argv)
                 break;
             case QEMU_OPTION_old_param:
                 old_param = 1;
+                break;
+            case QEMU_OPTION_bao:
+                if (!accel_find("bao")) {
+                    error_report("Option not supported for this target");
+                    exit(1);
+                }
+                opts = qemu_opts_parse_noisily(qemu_find_opts("bao"), optarg,
+                                               false);
+                if (!opts) {
+                    error_report("failed to parse -bao option");
+                    exit(1);
+                }
                 break;
             case QEMU_OPTION_rtc:
                 opts = qemu_opts_parse_noisily(qemu_find_opts("rtc"), optarg,

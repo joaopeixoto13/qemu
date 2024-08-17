@@ -26,7 +26,7 @@ DEF("machine", HAS_ARG, QEMU_OPTION_machine, \
     "-machine [type=]name[,prop[=value][,...]]\n"
     "                selects emulated machine ('-machine help' for list)\n"
     "                property accel=accel1[:accel2[:...]] selects accelerator\n"
-    "                supported accelerators are kvm, xen, hax, hvf, nvmm, whpx or tcg (default: tcg)\n"
+    "                supported accelerators are kvm, bao, xen, hax, hvf, nvmm, whpx or tcg (default: tcg)\n"
     "                vmport=on|off|auto controls emulation of vmport (default: auto)\n"
     "                dump-guest-core=on|off include guest memory in a core dump (default=on)\n"
     "                mem-merge=on|off controls memory merge support (default: on)\n"
@@ -59,7 +59,7 @@ SRST
 
     ``accel=accels1[:accels2[:...]]``
         This is used to enable an accelerator. Depending on the target
-        architecture, kvm, xen, hax, hvf, nvmm, whpx or tcg can be available.
+        architecture, kvm, bao, xen, hax, hvf, nvmm, whpx or tcg can be available.
         By default, tcg is used. If there is more than one accelerator
         specified, the next one is used if the previous one fails to
         initialize.
@@ -178,7 +178,7 @@ ERST
 
 DEF("accel", HAS_ARG, QEMU_OPTION_accel,
     "-accel [accel=]accelerator[,prop[=value][,...]]\n"
-    "                select accelerator (kvm, xen, hax, hvf, nvmm, whpx or tcg; use 'help' for a list)\n"
+    "                select accelerator (kvm, bao, xen, hax, hvf, nvmm, whpx or tcg; use 'help' for a list)\n"
     "                igd-passthru=on|off (enable Xen integrated Intel graphics passthrough, default=off)\n"
     "                kernel-irqchip=on|off|split controls accelerated irqchip support (default=on)\n"
     "                kvm-shadow-mem=size of KVM shadow MMU in bytes\n"
@@ -191,7 +191,7 @@ DEF("accel", HAS_ARG, QEMU_OPTION_accel,
 SRST
 ``-accel name[,prop=value[,...]]``
     This is used to enable an accelerator. Depending on the target
-    architecture, kvm, xen, hax, hvf, nvmm, whpx or tcg can be available. By
+    architecture, kvm, bao, xen, hax, hvf, nvmm, whpx or tcg can be available. By
     default, tcg is used. If there is more than one accelerator
     specified, the next one is used if the previous one fails to
     initialize.
@@ -4495,6 +4495,26 @@ SRST
 ``-option-rom file``
     Load the contents of file as an option ROM. This option is useful to
     load things like EtherBoot.
+ERST
+
+DEF("bao", HAS_ARG, QEMU_OPTION_bao, \
+    "-bao [dm_id=id][,irq=irq]\n", QEMU_ARCH_ALL)
+SRST
+``-bao option[,option[,option[,...]]]``
+    Create a new VirtIO Device Model instance.
+
+    ``-bao`` accepts all the following options:
+
+    ``dm_id=id``
+        This option defines the ID of the VirtIO Device Model. Note
+        that this ID must be in accordance with the VirtIO ID
+        specified in Bao configuration.
+
+    ``irq=irq``
+        This option defines the QEMU IRQ associated with the device
+        (e.g., qemu-arch64-virt starts with 0x2f for the first device,
+        0x2e for the second, etc.).
+
 ERST
 
 DEF("rtc", HAS_ARG, QEMU_OPTION_rtc, \

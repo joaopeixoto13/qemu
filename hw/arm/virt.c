@@ -37,6 +37,7 @@
 #include "hw/arm/boot.h"
 #include "hw/arm/primecell.h"
 #include "hw/arm/virt.h"
+#include "hw/arm/virt-bao.h"
 #include "hw/block/flash.h"
 #include "hw/vfio/vfio-calxeda-xgmac.h"
 #include "hw/vfio/vfio-amd-xgbe.h"
@@ -50,6 +51,7 @@
 #include "sysemu/kvm.h"
 #include "sysemu/hvf.h"
 #include "sysemu/qtest.h"
+#include "sysemu/bao.h"
 #include "hw/loader.h"
 #include "qapi/error.h"
 #include "qemu/bitops.h"
@@ -848,6 +850,19 @@ static void create_gic(VirtMachineState *vms, MemoryRegion *mem)
     } else if (vms->gic_version == VIRT_GIC_VERSION_2) {
         create_v2m(vms);
     }
+}
+
+/**
+ * @brief Create Bao's interrupt controller
+ * @param vms the virtual machine state
+ */
+static void create_bao_intc(VirtMachineState *vms)
+{
+    vms->gic = qdev_new("bao-intc");
+    qdev_prop_set_uint32(vms->gic, "num-irqs", NUM_IRQS);
+    sysbus_realize_and_unref(SYS_BUS_DEVICE(vms->gic), &error_fatal);
+
+    fdt_add_gic_node(vms);
 }
 
 static void create_uart(const VirtMachineState *vms, int uart,
@@ -1766,6 +1781,10 @@ static void virt_set_memmap(VirtMachineState *vms, int pa_bits)
         vms->memmap[i] = base_memmap[i];
     }
 
+    if (bao_enabled()) {
+        bao_virt_memmap_init(vms);
+    }
+
     if (ms->ram_slots > ACPI_MAX_RAM_SLOTS) {
         error_report("unsupported number of memory slots: %"PRIu64,
                      ms->ram_slots);
@@ -1925,7 +1944,7 @@ static void finalize_gic_version(VirtMachineState *vms)
         /* KVM w/o kernel irqchip can only deal with GICv2 */
         gics_supported |= VIRT_GIC_VERSION_2_MASK;
         accel_name = "KVM with kernel-irqchip=off";
-    } else if (tcg_enabled() || hvf_enabled() || qtest_enabled())  {
+    } else if (tcg_enabled() || hvf_enabled() || qtest_enabled() || bao_enabled())  {
         gics_supported |= VIRT_GIC_VERSION_2_MASK;
         if (module_object_class_by_name("arm-gicv3")) {
             gics_supported |= VIRT_GIC_VERSION_3_MASK;
@@ -2256,7 +2275,11 @@ static void machvirt_init(MachineState *machine)
 
     virt_flash_fdt(vms, sysmem, secure_sysmem ?: sysmem);
 
-    create_gic(vms, sysmem);
+    if (bao_enabled()) {
+        create_bao_intc(vms);
+    } else {
+        create_gic(vms, sysmem);
+    }
 
     virt_cpu_post_init(vms, sysmem);
 

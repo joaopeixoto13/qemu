@@ -42,6 +42,7 @@
 #endif /* !CONFIG_USER_ONLY */
 #include "sysemu/tcg.h"
 #include "sysemu/qtest.h"
+#include "sysemu/bao.h"
 #include "sysemu/hw_accel.h"
 #include "kvm_arm.h"
 #include "disas/capstone.h"
@@ -1625,7 +1626,7 @@ static void arm_cpu_realizefn(DeviceState *dev, Error **errp)
         }
     }
 
-    if (!tcg_enabled() && !qtest_enabled()) {
+    if (!tcg_enabled() && !qtest_enabled() && !bao_enabled()) {
         /*
          * We assume that no accelerator except TCG (and the "not really an
          * accelerator" qtest) can handle these features, because Arm hardware

@@ -69,6 +69,8 @@ option('malloc', type : 'combo', choices : ['system', 'tcmalloc', 'jemalloc'],
 
 option('kvm', type: 'feature', value: 'auto',
        description: 'KVM acceleration support')
+option('bao', type: 'feature', value: 'auto',
+       description: 'Bao VirtIO Backend support')
 option('hax', type: 'feature', value: 'auto',
        description: 'HAX acceleration support')
 option('whpx', type: 'feature', value: 'auto',

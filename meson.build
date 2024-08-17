@@ -147,6 +147,12 @@ if cpu in ['x86', 'x86_64']
   }
 endif
 
+if cpu in ['aarch64']
+  accelerator_targets += {
+    'CONFIG_BAO': ['aarch64-softmmu']
+  }
+endif
+
 modular_tcg = []
 # Darwin does not support references to thread-local variables in modules
 if targetos != 'darwin'
@@ -647,6 +653,9 @@ endif
 accelerators = []
 if get_option('kvm').allowed() and targetos == 'linux'
   accelerators += 'CONFIG_KVM'
+endif
+if not get_option('bao').disabled()
+  accelerators += 'CONFIG_BAO'
 endif
 if get_option('whpx').allowed() and targetos == 'windows'
   if get_option('whpx').enabled() and host_machine.cpu() != 'x86_64'
@@ -4140,6 +4149,7 @@ endif
 summary_info = {}
 if have_system
   summary_info += {'KVM support':       config_all.has_key('CONFIG_KVM')}
+  summary_info += {'Bao support':       config_all.has_key('CONFIG_BAO')}
   summary_info += {'HAX support':       config_all.has_key('CONFIG_HAX')}
   summary_info += {'HVF support':       config_all.has_key('CONFIG_HVF')}
   summary_info += {'WHPX support':      config_all.has_key('CONFIG_WHPX')}

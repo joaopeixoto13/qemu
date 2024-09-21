@@ -52,6 +52,7 @@
 #include "sysemu/hw_accel.h"
 #include "sysemu/xen-mapcache.h"
 #include "trace/trace-root.h"
+#include "sysemu/bao.h"
 
 #ifdef CONFIG_FALLOCATE_PUNCH_HOLE
 #include <linux/falloc.h>
@@ -1890,6 +1891,39 @@ RAMBlock *qemu_ram_alloc_from_fd(ram_addr_t size, MemoryRegion *mr,
     if (xen_enabled()) {
         error_setg(errp, "-mem-path not supported with Xen");
         return NULL;
+    }
+
+    if(bao_enabled()) {
+        struct bao_dm_info info;
+        int ret;
+        /**
+         * The offset is used as the device model ID
+         * Note: If you want to run more than one backend device (and therefore more than one device model),
+         * inside a single QEMU process, you must define the offset value of the first device model
+         * (e.g., 0 - if you pretend to run device model 0 and 1)
+         * (e.g., 2 - if you pretend to run device model 2 and 3)
+         * The `size` must be the sum of the memory size of all device models that you want to run
+         * for the same QEMU process.
+         */
+        info.dm_id = offset;
+        info.shmem_addr = 0;
+        info.shmem_size = 0;
+        info.irq = 0;
+        info.fd = 0;
+        /*< Open the bao-io-dispatcher device node */
+        int bao_io_dispatcher_fd = open("/dev/bao-io-dispatcher", O_RDWR);
+        /*< Get the file descriptor of shared memory */
+        ret = ioctl(bao_io_dispatcher_fd, BAO_IOCTL_IO_DM_GET_INFO, &info);
+        if (ret < 0) {
+            error_setg(errp, "bao no device model configured");
+            return NULL;
+        }
+        
+        /**
+         * Update the file descriptor that QEMU will use to mmap the memory
+         * Note: The shared memory should be contiguous
+         */
+        fd = info.fd;
     }
 
     if (kvm_enabled() && !kvm_has_sync_mmu()) {

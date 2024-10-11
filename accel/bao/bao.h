@@ -33,8 +33,7 @@ struct bao_virtio_request {
 	uint64_t op;            /**< Operation */
 	uint64_t value;         /**< Value */
 	uint64_t access_width;  /**< Access width */
-    uint64_t cpu_id;        /**< Frontend CPU ID */
-    uint64_t vcpu_id;       /**< Frontend VCPU ID */
+    uint64_t request_id;    /**< Request ID */
 	int32_t ret;            /**< Return value */
 };
 

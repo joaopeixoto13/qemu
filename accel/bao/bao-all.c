@@ -142,7 +142,7 @@ int bao_attach_io_client(struct bao_frontend_dm *self, struct bao_virtio_request
 
 int bao_notify_io_completed(struct bao_frontend_dm *self, struct bao_virtio_request *req)
 {
-    return ioctl(self->dm_fd, BAO_IOCTL_IO_REQUEST_NOTIFY_COMPLETED, req);
+    return ioctl(self->dm_fd, BAO_IOCTL_IO_REQUEST_COMPLETE, req);
 }
 
 int bao_create_ioeventfd(struct bao_frontend_dm *self, struct bao_ioeventfd *ioeventfd)

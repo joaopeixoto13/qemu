@@ -332,7 +332,6 @@ static void *control_plane_worker_thread(void *opaque)
         s->dm.req.value = 0x0;
         s->dm.req.access_width = 0x0;
         s->dm.req.request_id = 0x0;
-        s->dm.req.ret = 0x0;
 
         /**< Attach the control client */
         rc = s->dm.attach_io_client(&s->dm, &s->dm.req);

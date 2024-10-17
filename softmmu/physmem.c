@@ -1924,6 +1924,11 @@ RAMBlock *qemu_ram_alloc_from_fd(ram_addr_t size, MemoryRegion *mr,
          * Note: The shared memory should be contiguous
          */
         fd = info.fd;
+
+        /**
+         * Define offset as 0 since the base address is already defined in the device tree node
+         */
+        offset = 0;
     }
 
     if (kvm_enabled() && !kvm_has_sync_mmu()) {
